@@ -1,0 +1,119 @@
+\chapter{Linear Regression with Multiple Variables}
+
+Linear regression with multiple variables is also known as "multivariate linear regression".\\
+
+We now introduce notation for equations where we can have any number of input variables.
+
+\begin{itemize}
+\item $ x^{(i)}_j $ = value of feature j in the $ i^{th} $ training example
+\item $ x^{(i)} $ = the input (features) of the ith training example
+\item $ m $ = the number of training examples
+\item $ n $ = the number of features
+\end{itemize}
+
+The multivariable form of the hypothesis function accommodating these multiple features is as follows:\\
+
+\begin{center}
+$h_\theta(x) = \theta_0+\theta_1x_1+\theta_2x_2+\theta_3x_3+ \dots +\theta_nx_n$
+\end{center}
+
+In order to develop intuition about this function, we can think about $ \theta_0 $ as the basic price of a house, $ \theta_1 $ as the price per square meter, $ \theta_2 $ as the price per floor, etc. $ x_1 $ will be the number of square meters in the house, $ x_2 $ the number of floors, etc.
+
+Using the definition of matrix multiplication, our multivariable hypothesis function can be concisely represented as:
+
+\begin{align}
+h_\theta(x) = \begin{bmatrix}
+\theta_{1} \hspace{0.1cm}
+\theta_{2} \hspace{0.1cm}
+\cdots \hspace{0.1cm}
+\theta_{n}
+\end{bmatrix}
+\begin{bmatrix}
+x_{1} \\
+x_{2} \\
+\vdots \\
+x_{n}
+\end{bmatrix} = \theta^Tx
+\end{align}
+
+\section{Gradient Descent for Multiple Variables}
+
+The gradient descent equation itself is generally the same form; we just have to repeat it for our 'n' features:
+
+\begin{equation}
+\theta_j := \theta_j-\alpha \frac{1}{m} \sum_{i=1}^{m}\left(h_\theta(x^{(i)})-y^{(i)}\right)\cdot x^{(i)}_j \hspace{0.7cm} for \hspace{0.1cm} j := 0 \dots n
+\end{equation}
+
+\section{Gradient Descent in Practice - Feature Scaling}
+
+We can speed up gradient descent by having each of our input values in roughly the same range. This is because $\theta$ will descend quickly on small ranges and slowly on large ranges, and so will oscillate inefficiently down to the optimum when the variables are very uneven.\\
+
+The way to prevent this is to modify the ranges of our input variables so that they are all roughly the same. Ideally:\\
+
+\begin{center}
+-1 $\leq  x_{(i)} \leq $ 1 or -0.5 $ \leq  x_{(i)} \leq $ 0.5
+\end{center}
+
+These aren't exact requirements; we are only trying to speed things up. The goal is to get all input variables into roughly one of these ranges, give or take a few.\\
+
+Two techniques to help with this are feature scaling and mean normalization. Feature scaling involves dividing the input values by the range (i.e. the maximum value minus the minimum value) of the input variable, resulting in a new range of just 1. Mean normalization involves subtracting the average value for an input variable from the values for that input variable resulting in a new average value for the input variable of just zero. To implement both of these techniques, adjust your input values as shown in this formula:
+
+\begin{center}
+$x_i := \dfrac{x_i - \mu_i}{\sigma_i}$ 
+\end{center}
+
+Where $ \mu_i $ is the average of all the values for feature (i) and $ \sigma_i $ is the standard deviation.
+
+\section{Features and Polynomial Regression}
+
+We can improve our features and the form of our hypothesis function in a couple different ways.\\
+
+We can combine multiple features into one. For example, we can combine $ x_1 $ and $ x_2  $ into a new feature $ x_3 $ by taking $ x_1 \cdot  x_2 $.\\
+
+\subsection{Polynomial Regression}
+
+Our hypothesis function need not be linear (a straight line) if that does not fit the data well.\\
+
+We can change the behavior or curve of our hypothesis function by making it a quadratic, cubic or square root function (or any other form).\\
+
+For example, if our hypothesis function is $ h_\theta(x) = \theta_0 + \theta_1 x_1 $ then we can create additional features based on $ x_1 $ to get the quadratic function $ h_\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_1^2 $ or the cubic function $ h_\theta(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_1^2 + \theta_3 x_1^3 $.\\
+
+One important thing to keep in mind is, if you choose your features this way then feature scaling becomes very important.
+
+\section{Normal Equation}
+
+Gradient descent gives one way of minimizing \textbf{J}. Let’s discuss a second way of doing so, this time performing the minimization explicitly and without resorting to an iterative algorithm. In the "\textit{Normal Equation}" method, we will minimize J by explicitly taking its derivatives with respect to the $ \theta_j ’s $, and setting them to zero. This allows us to find the optimum theta without iteration. The normal equation formula is given below:
+
+\begin{equation}
+\theta = \left( X^TX\right)^{ -1} X^T y
+\end{equation}
+
+There is no need to do feature scaling with the normal equation.\\
+
+\begin{table}[h!]
+	\centering
+	
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Gradient Descent}  & \textbf{Normal Equation}                      \\ \hline
+		Need to choose alpha       & No need to choose alpha                       \\
+		Needs many iterations      & No need to iterate                            \\
+		$\mathcal{O}$ ($kn^2$)                 & $\mathcal{O}$ ($n^3$), need to calculate inverse of $X^T$ \\
+		Works well when n is large & Slow if n is very large                       \\ \hline
+	\end{tabular}
+\end{table}
+
+With the normal equation, computing the inversion has complexity $\mathcal{O}$($ nˆ3 $). So if we have a very large number of features, the normal equation will be slow. In practice, when n exceeds 10,000 it might be a good time to go from a normal solution to an iterative process.\\
+
+\subsection{Normal Equation Noninvertibility}
+
+When implementing the normal equation in octave we want to use the \textbf{'pinv'} function rather than \textbf{'inv.'} The \textbf{'pinv' }function will give you a value of $ \theta $ even if  $ X^TX $ is not invertible.
+
+If $ X^TX $ is noninvertible, the common causes might be having :
+
+\begin{itemize}
+\item Redundant features, where two features are very closely related (i.e. they are linearly dependent)
+\item Too many features (e.g. m $ \leq $ n). In this case, delete some features or use "regularization" (to be explained in a later lesson).
+\end{itemize}
+
+Solutions to the above problems include deleting a feature that is linearly dependent with another or deleting one or more features when there are too many features.
